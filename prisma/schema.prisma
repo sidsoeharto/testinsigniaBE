@@ -1,0 +1,95 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id              String      @id @default(cuid())
+  email           String      @unique
+  emailVerified   DateTime?
+  name            String
+  password        String
+  workspaceId     String?
+  workspace       Workspace?   @relation(fields: [workspaceId], references: [id])
+  role            String      
+  sessions        Session[]
+  Account         Account?
+  ApiToken        ApiToken[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  lastActivityAt  DateTime?
+}
+
+model Workspace {
+  id              String       @id @default(cuid())
+  name            String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  users           User[]
+}
+
+model Session {
+  id              String       @id @default(cuid())
+  userId          String
+  token           String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  user            User         @relation(fields: [userId], references: [id])
+}
+
+model Account {
+  id              String       @id @default(cuid())
+  userId          String       @unique
+  accountNumber   String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  user            User         @relation(fields: [userId], references: [id])
+}
+
+model ApiToken {
+  id              String       @id @default(cuid())
+  userId          String
+  token           String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  user            User         @relation(fields: [userId], references: [id])
+}
+
+model Contact {
+  id            String         @id @default(cuid())
+  workspaceId   String
+  name          String
+  phoneNumber   String
+  email         String
+  address       String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  contactLists  ContactList[]
+
+  @@map("contacts")
+}
+
+model ContactGroup {
+  id            String         @id @default(cuid())
+  name          String
+  description   String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  contactLists  ContactList[]
+
+  @@map("contact_groups")
+}
+
+model ContactList {
+  id            String        @id @default(cuid())
+  contactId     String
+  groupId       String
+  contact       Contact     @relation(fields: [contactId], references: [id])
+  contactGroup  ContactGroup @relation(fields: [groupId], references: [id])
+
+  @@map("contact_list")
+}
